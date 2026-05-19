@@ -15,6 +15,9 @@ async function startServer() {
 
   // API route
   app.post("/api/generate", async (req, res) => {
+    // 每次調用時重新讀取 .env，讓金鑰修改能即時生效而不需要手動重啟伺服器
+    dotenv.config({ override: true });
+
     const { transcript } = req.body;
     if (!transcript) {
       return res.status(400).json({ error: "Transcript is required" });
@@ -22,9 +25,9 @@ async function startServer() {
 
     try {
       const apiKey = process.env.GEMINI_API_KEY;
-      if (!apiKey) {
-        console.error("Error: GEMINI_API_KEY is not set.");
-        return res.status(500).json({ error: "GEMINI_API_KEY is not configured in the environment variables." });
+      if (!apiKey || apiKey === "YOUR_GEMINI_API_KEY_HERE" || apiKey.trim() === "") {
+        console.error("Error: GEMINI_API_KEY is not configured properly.");
+        return res.status(400).json({ error: "請在專案根目錄的 .env 檔案中，將 GEMINI_API_KEY 替換為您從 Google AI Studio 取得的真實 API 金鑰。" });
       }
 
       const ai = new GoogleGenAI({ apiKey });
@@ -47,9 +50,9 @@ async function startServer() {
 
       const summary = result.text;
       res.json({ summary });
-    } catch (error) {
+    } catch (error: any) {
       console.error("Gemini API error:", error);
-      res.status(500).json({ error: "Failed to generate summary" });
+      res.status(500).json({ error: error?.message || "Failed to generate summary" });
     }
   });
 
