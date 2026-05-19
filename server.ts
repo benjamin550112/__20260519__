@@ -9,7 +9,7 @@ dotenv.config();
 
 async function startServer() {
   const app = express();
-  const PORT = 3000;
+  const PORT = process.env.PORT || 3000;
 
   app.use(express.json());
 
@@ -21,14 +21,13 @@ async function startServer() {
     }
 
     try {
-      const ai = new GoogleGenAI({
-        apiKey: process.env.GEMINI_API_KEY!,
-        httpOptions: {
-          headers: {
-            'User-Agent': 'aistudio-build',
-          }
-        }
-      });
+      const apiKey = process.env.GEMINI_API_KEY;
+      if (!apiKey) {
+        console.error("Error: GEMINI_API_KEY is not set.");
+        return res.status(500).json({ error: "GEMINI_API_KEY is not configured in the environment variables." });
+      }
+
+      const ai = new GoogleGenAI({ apiKey });
 
       const systemInstructions = `
         你是一位專業的會議記錄助理。請根據使用者提供的會議逐字稿，整理出結構化的會議記錄。
@@ -42,7 +41,7 @@ async function startServer() {
       `;
 
       const result = await ai.models.generateContent({
-        model: "gemini-3-flash-preview",
+        model: process.env.GEMINI_MODEL || "gemini-2.5-flash",
         contents: `System Instructions: ${systemInstructions}\n\n會議內容:\n${transcript}`,
       });
 
