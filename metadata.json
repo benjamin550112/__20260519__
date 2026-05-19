@@ -1,0 +1,6 @@
+{
+  "name": "AI Meeting Record Generator",
+  "description": "AI 驅動的會議記錄總結與翻譯工具",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
